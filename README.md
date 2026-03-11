@@ -53,3 +53,12 @@ Your project directory must include the `appspec.yml` and a `scripts/` folder:
     ├── httpd_install.sh
     ├── httpd_start.sh
     └── httpd_stop.sh
+## 🛠️ Step 4: Application Development & Lifecycle Configuration
+
+On the **Developer Machine**, we prepare the application artifacts. The `appspec.yml` file is critical as it tells CodeDeploy how to handle the deployment lifecycle.
+
+### 1. Project Structure
+Create the following directory structure:
+```bash
+mkdir -p deploy_dir/sampleapp/scripts
+cd deploy_dir/sampleapp
