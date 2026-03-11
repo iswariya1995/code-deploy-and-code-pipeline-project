@@ -5,22 +5,10 @@ This project demonstrates a robust Continuous Integration and Continuous Deliver
 ---
 
 ## 🏗️ Architectural Design
----
-
-## 🏗️ Architectural Design
 
 The architecture is designed for high visibility and automation, ensuring that code changes are deployed safely and consistently.
 
-![AWS Architecture Diagram](https://github.com/user-attachments/assets/long-id-string)
 
-### Workflow Logic:
-1. **Source Layer:** A developer pushes a versioned .zip artifact to Amazon S3...
-The architecture is designed for high visibility and automation, ensuring that code changes are deployed safely and consistently.
-# AWS CI/CD Pipeline: Automated Web Deployment with CodeDeploy & S3
-
-This project demonstrates a fully automated **Continuous Integration and Continuous Delivery (CI/CD)** pipeline. It enables developers to push code changes to an S3 bucket and have them automatically deployed to a fleet of Amazon Linux 2 web servers via AWS CodeDeploy, with real-time status updates via SNS.
-
----
 
 ### Workflow Logic:
 1.  **Source Layer:** A developer pushes a versioned `.zip` artifact to **Amazon S3**.
@@ -98,3 +86,4 @@ To prevent unnecessary AWS costs, remove resources in the following order:
 3.  **Storage:** Empty and delete the S3 Bucket.
 4.  **Alerts:** Delete the SNS Topic and Subscriptions.
 5.  **Security:** Remove the IAM Roles and the Developer User.
+
