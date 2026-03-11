@@ -7,7 +7,9 @@ This project demonstrates a robust Continuous Integration and Continuous Deliver
 ## 🏗️ Architectural Design
 
 The architecture is designed for high visibility and automation, ensuring that code changes are deployed safely and consistently.
-
+<p align="center">
+  <img width="500" alt="AWS CI/CD Architecture Diagram" src="https://github.com/user-attachments/assets/long-id-string" />
+</p>
 
 ### Workflow Logic:
 1.  **Source Layer:** A developer pushes a versioned `.zip` artifact to **Amazon S3**.
