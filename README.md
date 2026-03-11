@@ -26,7 +26,7 @@ To ensure successful deployment, the repository is organized as follows:
 │   ├── httpd_start.sh
 │   └── httpd_stop.sh
 └── README.md           # Project documentation
-🚀 Step-by-Step Implementation
+## Step-by-Step Implementation
 Phase 1: Identity & Access Management (IAM)
 Before configuring services, we must establish the necessary permissions.
 
