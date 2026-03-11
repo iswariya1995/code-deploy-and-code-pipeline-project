@@ -8,7 +8,7 @@ This project demonstrates a robust Continuous Integration and Continuous Deliver
 
 The architecture is designed for high visibility and automation, ensuring that code changes are deployed safely and consistently.
 <p align="center">
-  <img width="500" alt="AWS CI/CD Architecture Diagram" src="https://github.com/user-attachments/assets/long-id-string" />
+  <img width="500" alt="AWS CI/CD Pipeline Architecture" src="https://github.com/user-attachments/assets/long-id-string" />
 </p>
 
 ### Workflow Logic:
