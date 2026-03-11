@@ -1,37 +1,55 @@
-# 🚀 AWS CI/CD Pipeline: Automated Web Deployment
+# AWS CI/CD Pipeline: Automated Deployment with CodeDeploy & S3
 
-This project demonstrates a complete **Continuous Integration/Continuous Deployment (CI/CD)** pipeline using AWS. It automates the workflow of deploying a web application from a developer environment to a fleet of EC2 instances.
-
-
+This project demonstrates a complete **Continuous Integration and Continuous Delivery (CI/CD)** workflow using AWS native tools. It automates the process of pulling code from a developer environment, storing it in S3, and deploying it to a fleet of EC2 instances with real-time SNS notifications.
 
 ---
 
-## ## 🎯 Project Objective
-To build an automated pipeline where code changes in a repository (S3) are automatically detected and deployed to a web server environment with real-time notifications.
+## 🏗️ Architectural Design
 
-### Core Services
-* **AWS CodePipeline**: Orchestrates the workflow.
-* **AWS CodeDeploy**: Automates deployment to EC2.
-* **Amazon S3**: Artifact store and source repository.
-* **Amazon EC2**: Target web servers (Amazon Linux 2).
-* **AWS IAM**: Security roles and permissions.
-* **Amazon SNS**: Email/SMS alerts for deployment status.
+The pipeline follows a **Decoupled Architecture**, ensuring that the developer environment, the artifact storage, and the production web servers are isolated for security and scalability.
+
+
+
+### How it works:
+1. **Source Layer:** A developer pushes a `.zip` revision to an **S3 Bucket**. **S3 Versioning** acts as the trigger.
+2. **Orchestration Layer:** **AWS CodePipeline** detects the change and pulls the latest artifact.
+3. **Deployment Layer:** **AWS CodeDeploy** processes the `appspec.yml` file, mapping files to `/var/www/html/` and executing lifecycle hooks (scripts).
+4. **Monitoring Layer:** **SNS** provides a feedback loop, sending Email/SMS alerts on deployment states (Success/Failure).
 
 ---
 
-## ## 🛠 1. Prerequisites & Setup
+## 🛠️ Services & Requirements
+| Service | Role |
+| :--- | :--- |
+| **EC2** | Web Server (Target) and Developer Machine. |
+| **S3** | Artifact storage with Versioning enabled. |
+| **CodeDeploy** | Manages the deployment lifecycle and EC2 Agent communication. |
+| **CodePipeline** | Orchestrates the flow from S3 to Deployment. |
+| **IAM** | Provides Least-Privilege access via Roles and Policies. |
+| **SNS** | Real-time notifications (Email/SMS). |
 
-### IAM Permissions
-Two critical roles are required:
-* **EC2-S3-CodeDeploy**: Attach `AmazonS3FullAccess` to allow EC2 to pull code.
-* **Code-Deploy-Role**: Use the `CodeDeploy` service role template to manage EC2.
+---
 
-### Environment Preparation
-Install the **CodeDeploy Agent** on your target web server:
-```bash
-sudo yum update -y
-sudo yum install ruby wget -y
-wget [https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install](https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install)
-chmod +x install
-sudo ./install auto
-sudo service codedeploy-agent status
+## 🚀 Step-by-Step Implementation
+
+### 1. IAM Configuration
+* **s3-ec2-full Role:** Allows EC2 to pull artifacts from S3.
+* **CodeDeployRole:** Allows the CodeDeploy service to manage EC2 instances.
+* **Developer User:** IAM user with programmatic access for CLI operations.
+
+### 2. Environment Setup (EC2)
+* **Web Server:** Install the **CodeDeploy Agent** on an Amazon Linux 2 instance.
+* **Developer Machine:** Configure the AWS CLI to push code.
+
+
+
+### 3. Application Structure
+Your project directory must include the `appspec.yml` and a `scripts/` folder:
+```text
+.
+├── index.html          # Web content
+├── appspec.yml         # Deployment "brain"
+└── scripts/            # Lifecycle hooks
+    ├── httpd_install.sh
+    ├── httpd_start.sh
+    └── httpd_stop.sh
