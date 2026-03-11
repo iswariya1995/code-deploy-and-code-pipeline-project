@@ -1,118 +1,104 @@
-# AWS CI/CD Pipeline: Automated Web Deployment
+AWS CI/CD Pipeline: Automated Web Deployment
+This project demonstrates a complete Continuous Interaction/Continuous Deployment (CI/CD) pipeline using AWS native services. It automates the process of deploying a web application from a developer environment to a fleet of EC2 instances via S3, using AWS CodePipeline and CodeDeploy.
 
+## Project Overview
+The goal is to model a workflow where any code change pushed to an S3 bucket automatically triggers a deployment to a web server.
 
+Core Services Used
+AWS CodePipeline: Orchestrates the workflow.
 
-## 📌 Project Overview
-This project implements a robust **Continuous Integration and Continuous Deployment (CI/CD)** pipeline using AWS native services. It automates the lifecycle of a web application, from source code updates in **Amazon S3** to automated deployment on **Amazon EC2** instances using **AWS CodeDeploy**, all orchestrated by **AWS CodePipeline**.
+AWS CodeDeploy: Automates the deployment to EC2.
 
-## 🏗 Architecture
-* **Source:** Amazon S3 (Versioned)
-* **Orchestration:** AWS CodePipeline
-* **Deployment:** AWS CodeDeploy (In-place deployment)
-* **Compute:** Amazon EC2 (Amazon Linux 2)
-* **Notifications:** Amazon SNS (Email & SMS alerts)
+Amazon S3: Acts as the artifact repository (Source).
 
----
+Amazon EC2: Hosts the web server and the developer environment.
 
-## 📂 Project Structure
-To ensure successful deployment, the repository is organized as follows:
+AWS IAM: Manages permissions for EC2 and CodeDeploy.
 
-```plaintext
-.
-├── index.html          # Main web application file
-├── appspec.yml         # AWS CodeDeploy configuration file
-├── scripts/            # Lifecycle event hooks
-│   ├── httpd_install.sh
-│   ├── httpd_start.sh
-│   └── httpd_stop.sh
-└── README.md           # Project documentation
-## Step-by-Step Implementation
-Phase 1: Identity & Access Management (IAM)
-Before configuring services, we must establish the necessary permissions.
+Amazon SNS: Provides email and SMS notifications on deployment status.
 
-EC2 Service Role: Create a role (e.g., s3-ec2-full) with AmazonS3FullAccess. This allows the web server to pull the application code from S3.
+## Architecture & Setup
+1. IAM Role Configuration
+Before launching instances, specific roles must be created:
 
-CodeDeploy Service Role: Create a role (e.g., cdrole) using the CodeDeploy service type. This allows CodeDeploy to manage EC2 instances on your behalf.
+EC2-S3-CodeDeploy Role: Allows EC2 to fetch artifacts from S3.
 
-Developer User: Create an IAM user with programmatic access for your local developer machine and attach the necessary S3 and CodeDeploy permissions.
+CodeDeploy Service Role: Grants CodeDeploy permission to manage EC2 instances.
 
-Phase 2: Web Server Environment Setup
-Launch EC2: Start an Amazon Linux 2 instance.
+2. Environment Preparation
+Developer Machine: An EC2 instance (Amazon Linux 2) where the code is written, zipped, and pushed to S3.
 
-Attach IAM Role: Assign the s3-ec2-full role created in Phase 1.
+Web Server (Target): An EC2 instance with the CodeDeploy Agent installed.
 
-Install CodeDeploy Agent:
+Note: The CodeDeploy agent requires Ruby and Wget. Use the following to install:
 
 Bash
 sudo yum update -y
 sudo yum install ruby wget -y
 wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install
 chmod +x install
-sudo ./install auto
-sudo service codedeploy-agent status
-Phase 3: Application Development & AppSpec
-On your Developer Machine, structure your application as follows:
+./install auto
+## Application Structure
+The application requires an appspec.yml file in the root directory to manage deployment lifecycle hooks.
 
-Plaintext
-/deploy_dir
-└── /sampleapp
-    ├── index.html
-    ├── appspec.yml
-    └── /scripts
-        ├── httpd_install.sh
-        ├── httpd_start.sh
-        └── httpd_stop.sh
-Key File: appspec.yml
-This file tells CodeDeploy where to place the files and which scripts to run during the deployment hooks (BeforeInstall, ApplicationStop, etc.).
+YAML
+version: 0.0
+os: linux
+files:
+  - source: /index.html
+    destination: /var/www/html/
+hooks:
+  BeforeInstall:
+    - location: scripts/httpd_install.sh
+  ApplicationStop:
+    - location: scripts/httpd_stop.sh
+  AfterInstall:
+    - location: scripts/httpd_start.sh
+## Deployment Steps
+Step 1: Source Preparation
+Create a simple index.html.
 
-Phase 4: S3 & Manual Deployment
-Create S3 Bucket: Enable Bucket Versioning (required for CodePipeline).
+Create shell scripts in a /scripts folder to handle httpd installation and service management.
 
-Push Code to S3:
+Zip the contents: zip -r sampleapp.zip .
+
+Step 2: Push to S3
+Push the revision to the S3 bucket using the AWS CLI:
 
 Bash
 aws deploy push --application-name sampleapp --s3-location s3://your-bucket-name/sampleapp.zip
-Create Deployment Group: In the CodeDeploy console, create a group targeting your EC2 instance (using Tags like AppName: SampleApp).
+Step 3: Configure CodePipeline
+Source Stage: Select Amazon S3 and the specific bucket/key. Note: S3 Versioning must be enabled.
 
-Execute Deployment: Manually trigger a deployment to verify the appspec.yml and scripts are functioning correctly.
+Deploy Stage: Select AWS CodeDeploy, choose your Application Name and Deployment Group.
 
-Phase 5: Automating with CodePipeline
-Create Pipeline: Link the S3 source bucket to the CodeDeploy application.
+## Notifications (SNS)
+The project includes a monitoring layer using Amazon SNS:
 
-Trigger Mechanism: Set the pipeline to trigger every time a new version of sampleapp.zip is detected in S3.
+Protocols: Email and SMS.
 
-Test Automation: Update index.html on the dev machine, re-zip, and push to S3. The pipeline will automatically detect the change and update the web server.
+Triggers: Deployment Start, Success, and Failure.
 
-Phase 6: Notifications (SNS)
-Create SNS Topic: Set up a topic (e.g., mytopic).
+Verification: Ensure you confirm the subscription via the automated email sent by AWS.
 
-Subscriptions: Add your Email and Phone Number as protocols.
+## Verification & Testing
+Update index.html to "Version 2".
 
-Configure Triggers: In CodeDeploy, create a notification rule to send alerts on SUCCESS or FAILURE states.
+Re-zip and upload to S3.
 
-🧹 Clean Up (Avoid Charges)
-To prevent unexpected AWS costs, delete resources in this order:
+Watch CodePipeline automatically detect the change and trigger CodeDeploy.
 
-AWS CodePipeline
+Access the EC2 Public IP to verify the updated content.
 
-AWS CodeDeploy Application
+## Cleanup (Demolish)
+To avoid unnecessary AWS charges, ensure you delete resources in this order:
 
-EC2 Instances
+Terminate EC2 Instances.
 
-S3 Bucket & Objects
+Delete CodePipeline and CodeDeploy applications.
 
-SNS Topics & Subscriptions
+Empty and delete S3 Buckets.
 
-IAM Roles & Users
+Delete SNS Topics and Subscriptions.
 
-🛠 Tech Stack
-Platform: AWS
-
-Infrastucture: EC2, S3
-
-CI/CD: CodeDeploy, CodePipeline
-
-Security: IAM
-
-Scripting: Bash, YAML
-
+Remove IAM Roles and Users.
